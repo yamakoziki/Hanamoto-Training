@@ -1058,6 +1058,17 @@ function startTraining() {
   if (!role)  { showToast('役職・立場を選択してください'); return; }
   if (!email) { showToast('メールアドレスを入力してください'); return; }
 
+  // アクセス制限：yamakoziki@gmail.com または @hanamoto.co.jp のみ
+  const allowed = email === 'yamakoziki@gmail.com' || email.endsWith('@hanamoto.co.jp');
+  if (!allowed) { showToast('このアプリは花本建設の関係者のみ利用できます'); return; }
+
+  const allowedDomains = ['gmail.com', 'hanamoto.co.jp'];
+  const emailDomain = email.split('@')[1];
+  if (!allowedDomains.includes(emailDomain)) {
+    showToast('使用できるメールアドレスは @gmail.com または @hanamoto.co.jp のみです');
+    return;
+  }
+
   state.user = { name, role, email };
   state.questions = shuffle(SCENARIOS).slice(0, CONFIG.TOTAL_QUESTIONS);
   state.answers = state.questions.map(q => ({
