@@ -328,7 +328,7 @@ body {
 }
 
 /* ROLE BADGE */
-.role-badge {
+.role-badge { display: none !important; } .role-badge-hidden {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -741,17 +741,7 @@ body {
       <label class="form-label" for="input-name">氏名</label>
       <input class="form-input" id="input-name" type="text" placeholder="例：山田 太郎">
     </div>
-    <div class="form-group">
-      <label class="form-label" for="input-role">役職・立場</label>
-      <select class="form-select" id="input-role">
-        <option value="">選択してください</option>
-        <option value="現場作業者">現場作業者</option>
-        <option value="現場管理者">現場管理者</option>
-        <option value="会社幹部">会社幹部</option>
-        <option value="海外実習生">海外実習生</option>
-        <option value="その他">その他</option>
-      </select>
-    </div>
+
     <div class="form-group">
       <label class="form-label" for="input-email">メールアドレス（記録送信用）</label>
       <input class="form-input" id="input-email" type="email" placeholder="例：yamada@hanamoto.co.jp">
@@ -856,6 +846,7 @@ body {
         <span class="total-label">合計スコア</span>
         <span class="total-val" id="total-score-val">－</span>
       </div>
+      <div id="score-band-comment" style="margin-top:12px;font-size:13px;font-weight:700;color:var(--c-brand);text-align:center;"></div>
     </div>
 
     <!-- 評価コメント -->
@@ -1631,25 +1622,16 @@ function shuffle(arr) {
 // ============================================================
 function startTraining() {
   const name  = document.getElementById('input-name').value.trim();
-  const role  = document.getElementById('input-role').value;
   const email = document.getElementById('input-email').value.trim();
 
   if (!name)  { showToast('氏名を入力してください'); return; }
-  if (!role)  { showToast('役職・立場を選択してください'); return; }
   if (!email) { showToast('メールアドレスを入力してください'); return; }
 
   // アクセス制限：yamakoziki@gmail.com または @hanamoto.co.jp のみ
   const allowed = email === 'yamakoziki@gmail.com' || email.endsWith('@hanamoto.co.jp');
   if (!allowed) { showToast('このアプリは花本建設の関係者のみ利用できます'); return; }
 
-  const allowedDomains = ['gmail.com', 'hanamoto.co.jp'];
-  const emailDomain = email.split('@')[1];
-  if (!allowedDomains.includes(emailDomain)) {
-    showToast('使用できるメールアドレスは @gmail.com または @hanamoto.co.jp のみです');
-    return;
-  }
-
-  state.user = { name, role, email };
+  state.user = { name, email };
   state.questions = shuffle(SCENARIOS).slice(0, CONFIG.TOTAL_QUESTIONS);
   state.answers = state.questions.map(q => ({
     qId: q.id, answer: '', hints: [], followupCount: 0
@@ -1673,8 +1655,6 @@ function renderQuestion() {
   document.getElementById('q-title').textContent      = q.title;
   document.getElementById('progress-fill').style.width = `${(n / total) * 100}%`;
 
-  document.getElementById('role-badge').innerHTML =
-    `${q.roleIcon} <strong>${q.role}</strong>（${q.roleDesc}）`;
   document.getElementById('situation-text').textContent = q.situation;
 
   // キーワードタグ（用語集に存在するもののみ表示）
@@ -1781,7 +1761,7 @@ async function getHint() {
   try {
     let hint;
 
-    if (CONFIG.WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+    if (CONFIG.WORKER_URL.includes('https://script.google.com/macros/s/AKfycbxdDe1Jhdj-RwMglJWAcxLO9KB_7NEIJgfMoZbcyK9RsJMkltpVUpOez6JL5gUXxfo2bQ/exec')) {
       // デモモード
       await new Promise(r => setTimeout(r, 1000));
       hint = `${state.user.name}さんの回答を読みました。\n\n「${answer.slice(0, 30)}…」という判断には重要な視点が含まれています。\n\nここで少し立場を変えて考えてみましょう。もしあなたが${answer.includes('安全') ? '発注者' : '現場作業員'}の立場だったとしたら、この判断をどのように受け止めるでしょうか？また、花本グループ誠心の「${q.keywords[0]}」という観点から、この状況で本来何が求められているのでしょうか？`;
@@ -1939,15 +1919,12 @@ async function generateEvaluation() {
   // ── 評価コメント ────────────────────────────────────────
   const summaryPayload = {
     type: 'evaluation',
-    user: state.user,
+    user: { name: state.user.name, email: state.user.email },
     answers: state.answers.map((a, i) => ({
       qId: a.qId,
       qTitle: state.questions[i].title,
       answer: a.answer,
-      hintsCount: a.hints.length,
-      followupCount: a.followupCount,
     })),
-    scores,
     timestamp: new Date().toISOString(),
   };
 
@@ -1963,6 +1940,11 @@ async function generateEvaluation() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       comment = data.comment;
+      // GASからAI採点スコアが返ってきた場合は上書き
+      if (data.scores) {
+        scores = data.scores;
+        renderScoreCard(scores);
+      }
     }
 
     document.getElementById('eval-comment-text').textContent = comment;
@@ -1977,61 +1959,46 @@ async function generateEvaluation() {
 
 // ============================================================
 //  スコア計算ロジック
-//  概念記載（各10点）＋ 具体策記載（各15点）＝ 最大25点/問
-//  誠心観点：信頼・創造・挑戦・感謝・奉仕・その他提案
-//  最大60点（概念のみ）/ 最大90点（概念＋具体）
+//  AI採点方式：6観点 × 最大16点 = 最大96点
+//  採点基準：0点（矛盾/無回答）/ 4点（概念のみ）/
+//           8点（具体策あり実現性低）/ 12点（実現性中）/ 16点（実現性高）
 // ============================================================
 function computeScores(answers) {
-  // キーワードベースの簡易評価（本番はworkerのAI評価に移行）
+  // AIから返却されたスコアがある場合はそれを使用
+  if (answers._aiScores) return answers._aiScores;
+
+  // フォールバック：簡易キーワード採点（GAS未接続時）
   const shinshiItems = [
-    { key: '信頼',   icon: '🛡️', conceptKw: ['報告', '連絡', '相談', '情報', '共有', '伝える', '確認'],
-                                 concreteKw: ['すぐに', '〇時までに', '上司に', '書面', '記録', '連絡する'] },
-    { key: '創造',   icon: '💡', conceptKw: ['原因', '分析', '不足', '改善', '見直し', 'なぜ'],
-                                 concreteKw: ['対策', '変更', '計画を', '修正', '提案', '実施'] },
-    { key: '挑戦',   icon: '🌱', conceptKw: ['再発防止', '他の事例', '次回', '学び', '経験'],
-                                 concreteKw: ['ルール化', 'マニュアル', '教育', '訓練', '周知'] },
-    { key: '感謝',   icon: '🙏', conceptKw: ['仲間', '組織', '個人だけ', 'チーム', '協力', '配慮'],
-                                 concreteKw: ['一緒に', 'みんなで', '責任を分担', '話し合い', '支援'] },
-    { key: '奉仕',   icon: '🤝', conceptKw: ['社会', '環境', '記録', '地域', '集積', '蓄積'],
-                                 concreteKw: ['データ', '報告書', 'アーカイブ', '文書化', '発信'] },
-    { key: 'その他提案', icon: '✨', conceptKw: ['独創', '新しい', 'アイデア', '提案', '視点', '工夫'],
-                                 concreteKw: ['具体的に', '例えば', '実際に', '試みる', '方法'] },
+    { key: '信頼',      icon: '🛡️',
+      kw: ['報告', '連絡', '相談', '情報共有', '確認', '伝える', '救命', '110', '119'] },
+    { key: '創造',      icon: '💡',
+      kw: ['原因', '分析', 'なぜ', '不足', '改善', '見直し', '課題'] },
+    { key: '挑戦',      icon: '🌱',
+      kw: ['再発防止', '対策', '次回', 'ルール', 'マニュアル', '教育', '周知'] },
+    { key: '感謝',      icon: '🙏',
+      kw: ['仲間', 'チーム', '組織', '協力', '配慮', '一緒に', '個人だけ'] },
+    { key: '奉仕',      icon: '🤝',
+      kw: ['社会', '環境', '地域', '記録', '蓄積', '住民', '将来'] },
+    { key: 'その他提案', icon: '✨',
+      kw: ['提案', 'アイデア', '独創', '工夫', '新しい', '視点'] },
   ];
 
-  let totalConcept = 0;
-  let totalConcrete = 0;
+  const allText = answers.map(a => a.answer).join(' ');
   const breakdown = [];
+  let total = 0;
 
   shinshiItems.forEach(item => {
-    // 全回答を結合してチェック
-    const allText = answers.map(a => a.answer).join(' ');
-
-    const hasConcept  = item.conceptKw.some(kw => allText.includes(kw));
-    const hasConcrete = item.concreteKw.some(kw => allText.includes(kw));
-
-    const conceptPts  = hasConcept  ? 10 : 0;
-    const concretePts = hasConcrete ? 15 : 0;
-
-    totalConcept  += conceptPts;
-    totalConcrete += concretePts;
-
-    breakdown.push({
-      key: item.key,
-      icon: item.icon,
-      concept: conceptPts,
-      concrete: concretePts,
-      total: conceptPts + concretePts,
-    });
+    const hits = item.kw.filter(kw => allText.includes(kw)).length;
+    // キーワード数に応じて4段階に変換
+    let pts = 0;
+    if (hits >= 3)      pts = 12;
+    else if (hits >= 2) pts = 8;
+    else if (hits >= 1) pts = 4;
+    total += pts;
+    breakdown.push({ key: item.key, icon: item.icon, total: pts });
   });
 
-  return {
-    breakdown,
-    totalConcept,
-    totalConcrete,
-    total: totalConcept + totalConcrete,
-    maxConcept: 60,
-    maxTotal: 90,
-  };
+  return { breakdown, total, maxTotal: 96, aiScored: false };
 }
 
 // ============================================================
@@ -2039,14 +2006,40 @@ function computeScores(answers) {
 // ============================================================
 function renderScoreCard(scores) {
   const container = document.getElementById('score-breakdown');
-  container.innerHTML = scores.breakdown.map(b => `
+  container.innerHTML = scores.breakdown.map(b => {
+    const pct = (b.total / 16) * 100;
+    let label = '';
+    if      (b.total === 0)  label = '未記載';
+    else if (b.total === 4)  label = '概念のみ';
+    else if (b.total === 8)  label = '具体策あり（実現性低）';
+    else if (b.total === 12) label = '具体策あり（実現性中）';
+    else if (b.total === 16) label = '具体策あり（実現性高）';
+    return `
     <div class="score-row">
       <div class="score-label">${b.icon} ${b.key}</div>
+      <div style="flex:1;margin:0 10px;">
+        <div style="height:6px;background:#e0e8f0;border-radius:3px;">
+          <div style="height:6px;background:var(--c-brand2);border-radius:3px;width:${pct}%;transition:width .5s;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--c-muted);margin-top:2px;">${label}</div>
+      </div>
       <div class="score-val">${b.total}点</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   document.getElementById('total-score-val').textContent = `${scores.total} / ${scores.maxTotal}点`;
+
+  // 点数帯コメント
+  const pct = scores.total / scores.maxTotal;
+  let band = '';
+  if      (pct >= 1.0)  band = '🏆 花本建設・誠心を体現した回答です';
+  else if (pct >= 0.75) band = '⭐ 高い実践力が見られます';
+  else if (pct >= 0.5)  band = '📈 実践的な視点が育っています。さらに深めましょう';
+  else if (pct >= 0.25) band = '📖 概念は理解できています。具体的な行動に落とし込みましょう';
+  else                  band = '🌱 基本的な対応の視点を改めて学びましょう';
+
+  const bandEl = document.getElementById('score-band-comment');
+  if (bandEl) bandEl.textContent = band;
 }
 
 // ============================================================
@@ -2054,18 +2047,27 @@ function renderScoreCard(scores) {
 // ============================================================
 function generateDemoComment(name, scores) {
   const pct = scores.total / scores.maxTotal;
-  let level;
-  if (pct >= 0.8)       level = '非常に高い';
-  else if (pct >= 0.6)  level = '高い';
-  else if (pct >= 0.4)  level = '標準的な';
-  else                  level = '基礎的な';
+  let level, advice;
+  if (pct >= 1.0) {
+    level = '花本建設・誠心を体現した';
+    advice = '全ての観点で実践的な記述ができています。後輩への指導にもこの視点を活かしてください。';
+  } else if (pct >= 0.75) {
+    level = '高い実践力を持つ';
+    const low = scores.breakdown.filter(b => b.total < 8).map(b => b.key);
+    advice = low.length ? `「${low.join('・')}」の観点をさらに深めると、より完成度が上がります。` : '引き続き具体策の精度を高めていきましょう。';
+  } else if (pct >= 0.5) {
+    level = '実践的な視点が育ちつつある';
+    const low = scores.breakdown.filter(b => b.total <= 4).map(b => b.key);
+    advice = low.length ? `「${low.join('・')}」の観点で、概念だけでなく具体的な行動まで記述できると得点が上がります。` : '各観点の具体策をより詳しく書いてみましょう。';
+  } else if (pct >= 0.25) {
+    level = '基本的な理解がある';
+    advice = '概念の記述はできていますが、「いつ・誰が・どのように」という具体的な行動まで書くことを意識しましょう。';
+  } else {
+    level = '成長の余地がある';
+    advice = '花本建設・誠心の6つの観点（信頼・創造・挑戦・感謝・奉仕・その他提案）を意識しながら、各場面での対応を考えてみましょう。';
+  }
 
-  const low = scores.breakdown.filter(b => b.total === 0).map(b => b.key);
-  const lowMsg = low.length
-    ? `\n\n特に「${low.join('・')}」の視点については、今後の回答でさらに意識してみてください。`
-    : '\n\n全ての観点で記述が見られました。';
-
-  return `${name}さん、5問お疲れ様でした。\n\n今回の回答全体を通じて、${level}誠心への意識が見られました。${lowMsg}\n\n「報告・連絡・相談」を基本に、原因分析と再発防止の視点、そして組織・仲間への配慮を常に持ち続けることが、花本グループ誠心の実践につながります。\n\n次のトレーニングでも、ぜひ新たな視点に挑戦してください。`;
+  return `${name}さん、5問お疲れ様でした。\n\n今回の回答全体を通じて、${level}回答が見られました。\n\n${advice}\n\n次のトレーニングでも新たな視点に挑戦してください。`;
 }
 </script>
 </body>
