@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>花本 土木技術者育成プログラム</title>
+<style>
+/* ===================================================
+   RESET & ROOT
+=================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --c-bg:        #f5f3ee;
+  --c-surface:   #ffffff;
+  --c-brand:     #1a4a7a;
+  --c-brand2:    #2e7db8;
+  --c-accent:    #c8902a;
+  --c-text:      #1e2a3a;
+  --c-muted:     #6b7a8d;
+  --c-border:    #dde3ea;
+  --c-ok:        #2a7a4a;
+  --c-warn:      #b85c00;
+  --r-card:      12px;
+  --shadow:      0 2px 12px rgba(26,74,122,.10);
+}
+html { font-size: 16px; }
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Meiryo', sans-serif;
+  background: var(--c-bg);
+  color: var(--c-text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ===================================================
+   SCREENS
+=================================================== */
+.screen { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
+.screen.active { display: block; }
+
+/* ===================================================
+   TOP BAR
+=================================================== */
+.top-bar {
+  background: var(--c-brand);
+  color: #fff;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.20);
+}
+.top-bar-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+.top-bar-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  flex: 1;
+}
+.top-bar-sub {
+  font-size: 11px;
+  opacity: .75;
+}
+
+/* ===================================================
+   INTRO SCREEN
+=================================================== */
+.intro-hero {
+  background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand2) 100%);
+  color: #fff;
+  border-radius: var(--r-card);
+  padding: 28px 20px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.intro-hero .hero-icon { font-size: 52px; margin-bottom: 10px; }
+.intro-hero h1 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.intro-hero p  { font-size: 13px; opacity: .85; line-height: 1.7; }
+
+.intro-card {
+  background: var(--c-surface);
+  border-radius: var(--r-card);
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.intro-card h2 {
+  font-size: 14px;
+  color: var(--c-brand);
+  font-weight: 700;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--c-brand);
+}
+.intro-card p, .intro-card li {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--c-text);
+}
+.intro-card ul { padding-left: 18px; }
+.intro-card li { margin-bottom: 4px; }
+
+/* 評価の流れ表示 */
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--c-bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.flow-step-num {
+  background: var(--c-brand);
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.flow-step-text {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.flow-step-text strong {
+  color: var(--c-brand);
+}
+
+/* 評価点バッジ */
+.score-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.score-badge {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.score-badge .pts {
+  font-weight: 700;
+  color: var(--c-accent);
+}
+
+.intro-warn {
+  background: #fff8e6;
+  border-left: 4px solid var(--c-accent);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #7a4a00;
+  margin-top: 10px;
+  line-height: 1.7;
+}
+
+/* ===================================================
+   FORM
+=================================================== */
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-brand);
+  margin-bottom: 5px;
+}
+.form-input, .form-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 8px;
+  font-size: 15px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: inherit;
+  transition: border-color .2s;
+}
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--c-brand2);
+  box-shadow: 0 0 0 3px rgba(46,125,184,.12);
+}
+
+/* ===================================================
+   BUTTONS
+=================================================== */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand2) 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .06em;
+  box-shadow: 0 4px 14px rgba(26,74,122,.30);
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,74,122,.35); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-hint {
+  width: 100%;
+  padding: 12px;
+  background: var(--c-brand);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+  margin-top: 8px;
+}
+.btn-hint:hover { background: var(--c-brand2); }
+.btn-hint:disabled { background: #aaa; cursor: not-allowed; }
+
+.btn-followup {
+  padding: 10px 16px;
+  background: transparent;
+  color: var(--c-brand);
+  border: 2px solid var(--c-brand);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-followup:hover { background: var(--c-brand); color: #fff; }
+.btn-followup:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-next {
+  padding: 10px 16px;
+  background: var(--c-ok);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-next:hover { background: #1e5c36; }
+
+.btn-restart {
+  padding: 14px 32px;
+  background: var(--c-brand);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+/* ===================================================
+   QUESTION HEADER
+=================================================== */
+.q-header {
+  background: var(--c-brand);
+  color: #fff;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  padding: 14px 16px 10px;
+  margin-bottom: 0;
+}
+.q-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.q-counter {
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(255,255,255,.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.q-category {
+  font-size: 11px;
+  opacity: .8;
+  background: rgba(255,255,255,.15);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.q-title {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,.25);
+  border-radius: 0;
+}
+.progress-fill {
+  height: 100%;
+  background: #f0c040;
+  border-radius: 0;
+  transition: width .4s ease;
+}
+
+/* ROLE BADGE */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-surface);
+  border: 1.5px solid var(--c-border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-brand);
+  margin: 12px 0 0;
+}
+
+/* ===================================================
+   SCENARIO CARD
+=================================================== */
+.scenario-card {
+  background: var(--c-surface);
+  border-radius: 0 0 var(--r-card) var(--r-card);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+
+.situation-box {
+  background: #f0f4f8;
+  border-left: 4px solid var(--c-brand2);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--c-text);
+  margin: 12px 0;
+}
+
+.keywords-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.keyword-tag {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--c-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s;
+}
+.keyword-tag:hover { background: #dde8f5; color: var(--c-brand); }
+
+/* ===================================================
+   ANSWER BOX
+=================================================== */
+.answer-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-brand);
+  margin-bottom: 6px;
+}
+.answer-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.7;
+  resize: vertical;
+  min-height: 90px;
+  background: var(--c-surface);
+  transition: border-color .2s;
+}
+.answer-textarea:focus {
+  outline: none;
+  border-color: var(--c-brand2);
+  box-shadow: 0 0 0 3px rgba(46,125,184,.12);
+}
+.answer-char {
+  font-size: 11px;
+  color: var(--c-muted);
+  text-align: right;
+  margin-top: 3px;
+}
+
+/* ===================================================
+   HINT CARD
+=================================================== */
+.hint-card {
+  background: #eef6ff;
+  border: 1.5px solid var(--c-brand2);
+  border-radius: var(--r-card);
+  padding: 16px;
+  margin-top: 12px;
+  display: none;
+}
+.hint-card.show { display: block; animation: fadeIn .3s ease; }
+.hint-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-brand);
+  margin-bottom: 10px;
+}
+.hint-text {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--c-text);
+  white-space: pre-wrap;
+}
+.hint-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===================================================
+   FOLLOWUP PANEL
+=================================================== */
+.followup-panel {
+  background: #fff;
+  border: 1.5px solid var(--c-border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+  display: none;
+}
+.followup-panel.show { display: block; animation: fadeIn .25s ease; }
+.followup-label {
+  font-size: 12px;
+  color: var(--c-muted);
+  margin-bottom: 8px;
+}
+.followup-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.7;
+  resize: vertical;
+  min-height: 70px;
+}
+.followup-textarea:focus {
+  outline: none;
+  border-color: var(--c-brand2);
+}
+.followup-char {
+  font-size: 11px;
+  color: var(--c-muted);
+  text-align: right;
+  margin: 3px 0 8px;
+}
+.btn-followup-send {
+  width: 100%;
+  padding: 9px;
+  background: var(--c-brand2);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-followup-send:disabled { background: #aaa; cursor: not-allowed; }
+
+/* 深掘り終了メッセージ */
+.followup-done-msg {
+  background: #fff3e0;
+  border: 1px solid #f0b040;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #7a4a00;
+  margin-top: 10px;
+  line-height: 1.7;
+  display: none;
+}
+.followup-done-msg.show { display: block; }
+
+/* ===================================================
+   LAW LINKS
+=================================================== */
+.law-links {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--c-border);
+}
+.law-links-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-muted);
+  margin-bottom: 6px;
+}
+.law-link {
+  display: block;
+  font-size: 12px;
+  color: var(--c-brand2);
+  text-decoration: none;
+  padding: 3px 0;
+}
+.law-link:hover { text-decoration: underline; }
+
+/* ===================================================
+   THINKING SPINNER
+=================================================== */
+.thinking {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: #eef6ff;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--c-brand);
+}
+.thinking.show { display: flex; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 3px solid rgba(26,74,122,.2);
+  border-top-color: var(--c-brand);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ===================================================
+   COMPLETE SCREEN
+=================================================== */
+.complete-content {
+  text-align: center;
+  padding: 20px 8px;
+}
+.complete-icon { font-size: 56px; margin-bottom: 12px; }
+.complete-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-brand);
+  margin-bottom: 8px;
+}
+.complete-sub {
+  font-size: 14px;
+  color: var(--c-muted);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+/* 評価カード */
+.eval-card {
+  background: var(--c-surface);
+  border-radius: var(--r-card);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  text-align: left;
+  margin-bottom: 16px;
+}
+.eval-card h3 {
+  font-size: 14px;
+  color: var(--c-brand);
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--c-brand);
+}
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--c-border);
+  font-size: 13px;
+}
+.score-row:last-child { border-bottom: none; }
+.score-label { display: flex; align-items: center; gap: 6px; }
+.score-val {
+  font-weight: 700;
+  color: var(--c-brand);
+  font-size: 15px;
+}
+.total-score-box {
+  background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand2) 100%);
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+.total-label { font-size: 14px; font-weight: 700; }
+.total-val { font-size: 28px; font-weight: 900; }
+
+.eval-comment-box {
+  background: #f0f8f0;
+  border: 1.5px solid #4a9a6a;
+  border-radius: var(--r-card);
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.85;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+.eval-comment-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-ok);
+  margin-bottom: 8px;
+}
+
+/* ===================================================
+   TOAST
+=================================================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1e2a3a;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity .3s, transform .3s;
+  pointer-events: none;
+  max-width: 88%;
+  text-align: center;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===================================================
+   ANIMATIONS
+=================================================== */
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@keyframes spin    { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-bar-icon">花本</div>
+  <div class="top-bar-title">土木技術者育成プログラム</div>
+  <div class="top-bar-sub">花本建設</div>
+</div>
+
+<!-- ===== SCREEN: INTRO ===== -->
+<div id="screen-intro" class="screen active">
+
+  <div class="intro-hero">
+    <div class="hero-icon">🏗️</div>
+    <h1>花本グループ 誠心トレーニング</h1>
+    <p>北海道の現場を舞台にした<br>土木技術者のための実践教育</p>
+  </div>
+
+  <!-- 流れの説明 -->
+  <div class="intro-card">
+    <h2>📋 このトレーニングの流れ</h2>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-text">現場の場面が<strong>5問</strong>ランダムに出題されます</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-text">あなたの立場で判断し、<strong>自由に考えを記述</strong>します</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-text">AIメンターから<strong>ヒント</strong>が届きます（答えは示しません）</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-text"><strong>さらに考えてみる</strong>を最大2回まで使えます</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <div class="flow-step-text"><strong>5問終了後</strong>、花本建設・誠心の観点から<strong>総合評価コメント</strong>が届きます</div>
+      </div>
+    </div>
+    <div class="intro-warn">
+      ※ 評価コメントは5問すべて回答後に表示されます。じっくり考えながら進めましょう。
+    </div>
+  </div>
+
+  <!-- ログインフォーム -->
+  <div class="intro-card">
+    <h2>👤 あなたの情報を入力</h2>
+    <div class="form-group">
+      <label class="form-label" for="input-name">氏名</label>
+      <input class="form-input" id="input-name" type="text" placeholder="例：山田 太郎">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="input-role">役職・立場</label>
+      <select class="form-select" id="input-role">
+        <option value="">選択してください</option>
+        <option value="現場作業者">現場作業者</option>
+        <option value="現場管理者">現場管理者</option>
+        <option value="会社幹部">会社幹部</option>
+        <option value="海外実習生">海外実習生</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="input-email">メールアドレス（記録送信用）</label>
+      <input class="form-input" id="input-email" type="email" placeholder="例：yamada@hanamoto.co.jp">
+    </div>
+    <button class="btn-primary" onclick="startTraining()">トレーニングを開始する →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: QUESTION ===== -->
+<div id="screen-question" class="screen">
+
+  <div class="q-header" id="q-header">
+    <div class="q-meta">
+      <span class="q-counter" id="q-counter">第 1 問 / 5</span>
+      <span class="q-category" id="q-category"></span>
+    </div>
+    <div class="q-title" id="q-title"></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:20%"></div>
+    </div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="role-badge" id="role-badge"></div>
+    <div class="situation-box" id="situation-text"></div>
+    <div class="keywords-row" id="keywords-row"></div>
+
+    <div class="answer-label">💬 あなたの考えを自由に記述してください</div>
+    <textarea class="answer-textarea" id="answer-input"
+      placeholder="この場面でどのように対応しますか？なぜその判断をしますか？&#10;&#10;立場・影響・事前にすべきことなど、自由に書いてください。"
+      oninput="updateCharCount(this)"
+      rows="5"></textarea>
+    <div class="answer-char" id="answer-char">0字</div>
+
+    <button class="btn-hint" id="btn-hint" onclick="getHint()">ヒントをもらう →</button>
+
+    <div class="thinking" id="thinking">
+      <div class="spinner"></div>
+      <span>メンターが考えています…</span>
+    </div>
+
+    <!-- ヒントカード -->
+    <div class="hint-card" id="hint-card">
+      <div class="hint-header">💡 メンターからのヒント</div>
+      <div class="hint-text" id="hint-text"></div>
+      <div class="hint-actions">
+        <button class="btn-followup" id="btn-followup-toggle" onclick="toggleFollowup()">さらに考えてみる</button>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">次の問題へ →</button>
+      </div>
+      <!-- 深掘り回数終了メッセージ -->
+      <div class="followup-done-msg" id="followup-done-msg"></div>
+    </div>
+
+    <!-- 深掘り入力パネル -->
+    <div class="followup-panel" id="followup-panel">
+      <div class="followup-label">💬 ヒントを読んでさらに考えたことを書いてください</div>
+      <textarea class="followup-textarea" id="followup-input"
+        placeholder="「なるほど、では○○の場合は…」&#10;「もし自分が○○の立場だったら…」"
+        oninput="updateFollowupCount(this)"
+        rows="4"></textarea>
+      <div class="followup-char" id="followup-char">0字</div>
+      <button class="btn-followup-send" id="btn-followup-send" onclick="sendFollowup()">
+        深掘りする →
+      </button>
+    </div>
+
+    <!-- 法令リンク -->
+    <div class="law-links" id="law-links"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: EVALUATING ===== -->
+<div id="screen-evaluating" class="screen">
+  <div style="text-align:center;padding:40px 20px;">
+    <div style="font-size:48px;margin-bottom:16px;">📊</div>
+    <div style="font-size:18px;font-weight:700;color:var(--c-brand);margin-bottom:8px;">5問の評価コメントを作成中…</div>
+    <div style="font-size:13px;color:var(--c-muted);line-height:1.7;">
+      花本グループ誠心の観点から<br>あなたの回答を分析しています
+    </div>
+    <div style="margin:24px auto;width:40px;height:40px;border:4px solid rgba(26,74,122,.15);border-top-color:var(--c-brand);border-radius:50%;animation:spin .7s linear infinite;"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: COMPLETE ===== -->
+<div id="screen-complete" class="screen">
+  <div class="complete-content">
+    <div class="complete-icon">🏔️</div>
+    <div class="complete-title">お疲れ様でした</div>
+    <div class="complete-sub">
+      5問すべてに取り組みました。<br>
+      以下に評価コメントをお届けします。
+    </div>
+
+    <!-- 評価スコア -->
+    <div class="eval-card" id="score-card">
+      <h3>📊 誠心スコア</h3>
+      <div id="score-breakdown"></div>
+      <div class="total-score-box">
+        <span class="total-label">合計スコア</span>
+        <span class="total-val" id="total-score-val">－</span>
+      </div>
+    </div>
+
+    <!-- 評価コメント -->
+    <div class="eval-card">
+      <h3>💬 総合評価コメント</h3>
+      <div class="eval-comment-box" id="eval-comment-text">評価コメントを生成中…</div>
+    </div>
+
+    <button class="btn-restart" onclick="location.reload()">もう一度挑戦する</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  設定
+// ============================================================
+const CONFIG = {
+  WORKER_URL: 'https://script.google.com/macros/s/AKfycbyFtAzLm9vPvPcNk3UP7RHGRy34ghMnyBAklEpgSGcmVPLA3Dfj2OyrJ3fxUUnT3zTkbQ/exec',
+  TOTAL_QUESTIONS: 5,
+  MAX_FOLLOWUPS: 2,
+  GLOSSARY_URL: 'https://yamakoziki.github.io/HanamotoGlossary/',
+  COMPANY_URL: 'https://hanamoto.co.jp/company/',
+};
+
+// ============================================================
+//  シナリオデータベース（抜粋 — 本番は60場面を全収録）
+// ============================================================
+const SCENARIOS = [
+  {
+    id: 'A-01', category: '農業系工事', season: '春',
+    title: '春の融雪期、用水路工事の着工判断',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理・工程管理の責任者',
+    situation: `4月上旬、北海道の農村地帯で用水路新設工事が始まった。融雪水が大量に流れ込み、掘削予定箇所の地盤が著しく軟弱化している。工期は農作業開始の5月中旬までと定められており、発注者からは「予定通りに着工せよ」と強い要求がある。あなたは今朝、現場に到着した。`,
+    keywords: ['地盤軟弱', '工程管理', '融雪', '安全管理', '施工計画'],
+    laws: [
+      { name: '労働安全衛生法 第20条（危険防止）', url: 'https://laws.e-gov.go.jp/law/347AC0000000057' },
+      { name: '建設業法 第26条の3（技術者の職務）', url: 'https://laws.e-gov.go.jp/law/324AC0000000100' },
+    ]
+  },
+  {
+    id: 'A-02', category: '農業系工事', season: '夏',
+    title: '農家への工事説明会で激しい反発',
+    role: '会社幹部', roleIcon: '👔',
+    roleDesc: '経営判断・法的責任・対外折衝の責任者',
+    situation: `圃場整備工事の地元説明会で、農家10名のうち3名が激しく反発している。「工事で排水が悪くなる」「重機が田んぼを踏み荒らした」「説明が不十分だった」と口々に訴える。地元農協の担当者も難しい顔をしている。発注者（市の農政課）の担当者も同席している。`,
+    keywords: ['合意形成', '住民説明', '誠実対応', '農業補償', '受益者'],
+    laws: [
+      { name: '民法 第709条（不法行為）', url: 'https://laws.e-gov.go.jp/law/129AC0000000089' },
+    ]
+  },
+  {
+    id: 'B-01', category: '道路工事', season: '冬',
+    title: '除雪作業中の住民苦情対応',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理・工程管理の責任者',
+    situation: `真冬の夜間除雪作業中、「雪を庭に投げ込んだ」と住民から激しいクレームが入った。作業員は「そんなことはしていない」と言い張っている。除雪ルートはまだ半分以上残っており、夜明け前に終わらせないと朝の交通渋滞に影響する。あなたはどう対処するか。`,
+    keywords: ['住民対応', '夜間作業', '除雪管理', '工程管理', '誠実'],
+    laws: [
+      { name: '道路法 第43条（道路の使用）', url: 'https://laws.e-gov.go.jp/law/327AC0000000180' },
+    ]
+  },
+  {
+    id: 'B-02', category: '道路工事', season: '秋',
+    title: '施工不良を発見した下請け作業員の告白',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理・工程管理の責任者',
+    situation: `下請け会社の作業員Aさんから「昨日の舗装、材料の配合を間違えたかもしれない」と打ち明けられた。すでに転圧・養生も終わっており、外見上は問題ない。発注者の検査は明日の予定。上司（会社幹部）には報告していない。Aさんは「このままバレなければいいかも」と言っている。`,
+    keywords: ['品質管理', '施工不良', '報告義務', '誠実', '瑕疵担保'],
+    laws: [
+      { name: '建設業法 第31条（報告・検査）', url: 'https://laws.e-gov.go.jp/law/324AC0000000100' },
+      { name: '民法 第634条（請負人の担保責任）', url: 'https://laws.e-gov.go.jp/law/129AC0000000089' },
+    ]
+  },
+  {
+    id: 'C-01', category: '河川工事', season: '夏',
+    title: '護岸工事中の希少植物発見',
+    role: '現場作業者', roleIcon: '👷',
+    roleDesc: '実作業・危険回避・報告義務',
+    situation: `河川護岸の草刈り作業中、重機のオペレーターが「この草、なんか珍しい形をしている」と声をかけてきた。確かに群生している植物は見慣れないもので、スマホで調べると北海道の絶滅危惧種に似ている。この場所は明日から掘削予定区域に含まれている。`,
+    keywords: ['環境保全', '絶滅危惧種', '報告連絡相談', '施工中断判断', '生態系'],
+    laws: [
+      { name: '種の保存法（絶滅のおそれのある野生動植物の種の保存に関する法律）', url: 'https://laws.e-gov.go.jp/law/404AC0000000075' },
+    ]
+  },
+  {
+    id: 'C-02', category: '河川工事', season: '春',
+    title: '増水時の工事続行判断',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理の責任者',
+    situation: `河川護岸工事の施工中、上流で予報外の雨が降り始め、水位が急上昇している。工程は予定より3日遅れており、今日中に仮設矢板の打設を終えたい。重機は川の中に入った状態。作業員5名がいる。気象庁の洪水注意報が出た。`,
+    keywords: ['洪水リスク', '安全管理', '撤収判断', '工程管理', '河川法'],
+    laws: [
+      { name: '河川法 第26条（工作物の設置）', url: 'https://laws.e-gov.go.jp/law/339AC0000000167' },
+      { name: '労働安全衛生法 第25条（緊急の危険）', url: 'https://laws.e-gov.go.jp/law/347AC0000000057' },
+    ]
+  },
+  {
+    id: 'D-01', category: '安全・労務', season: '冬',
+    title: '過労が疑われる作業員の就業継続',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理・工程管理の責任者',
+    situation: `繁忙期の工事で、ベテラン作業員Bさんが今月すでに連続28日出勤している。今朝、顔色が悪く動作も鈍い。「大丈夫です、続けます」と本人は言うが、重機オペレーターの仕事は集中力が求められる。今日休ませると工程に影響が出る。`,
+    keywords: ['過労', '労働時間管理', '安全配慮義務', '工程調整', '人命優先'],
+    laws: [
+      { name: '労働基準法 第32条（労働時間）', url: 'https://laws.e-gov.go.jp/law/322AC0000000049' },
+      { name: '労働安全衛生法 第66条（健康診断）', url: 'https://laws.e-gov.go.jp/law/347AC0000000057' },
+    ]
+  },
+  {
+    id: 'D-02', category: '安全・労務', season: '夏',
+    title: '熱中症の疑いがある作業員への対応',
+    role: '現場作業者', roleIcon: '👷',
+    roleDesc: '実作業・危険回避・報告義務',
+    situation: `8月の炎天下、舗装工事現場で午後2時すぎ、隣で作業していた外国人実習生のCさんが突然ふらつき、その場にしゃがみこんだ。「頭が痛い」「気持ち悪い」と言っている。現場代理人は離れた場所で発注者と話し中。あなたはすぐ近くにいる唯一の作業員だ。`,
+    keywords: ['熱中症', '救命対応', '報告連絡', '外国人実習生', '安全管理'],
+    laws: [
+      { name: '労働安全衛生法 第25条（緊急の危険）', url: 'https://laws.e-gov.go.jp/law/347AC0000000057' },
+    ]
+  },
+  {
+    id: 'E-01', category: '社会・環境', season: '夏',
+    title: '工事廃材の不法投棄を目撃',
+    role: '現場作業者', roleIcon: '👷',
+    roleDesc: '実作業・危険回避・報告義務',
+    situation: `工事現場近くの山林で、他社と思われるトラックが廃材を不法投棄している現場を偶然目撃した。トラックのナンバーと会社名らしき社名は確認できた。同僚は「他社のことだから関係ない」と言っている。あなたはどうするか。`,
+    keywords: ['廃棄物処理法', '告発義務', '環境保全', '組織判断', '記録'],
+    laws: [
+      { name: '廃棄物の処理及び清掃に関する法律 第25条（罰則）', url: 'https://laws.e-gov.go.jp/law/345AC0000000137' },
+    ]
+  },
+  {
+    id: 'E-02', category: '社会・環境', season: '秋',
+    title: 'SNSへの工事現場写真投稿問題',
+    role: '現場作業者', roleIcon: '👷',
+    roleDesc: '実作業・危険回避・報告義務',
+    situation: `同僚がSNSに工事現場の写真を投稿し、「今日の現場はここ」とタグで場所を特定できる状態にしている。写真には工事中の橋の構造物や仮設設備が写っており、発注者情報も一部映り込んでいる。本人は「単なる日記のつもり」と話している。`,
+    keywords: ['情報セキュリティ', '個人情報', '発注者への影響', '組織倫理', 'SNS管理'],
+    laws: [
+      { name: '不正競争防止法 第2条（営業秘密）', url: 'https://laws.e-gov.go.jp/law/405AC0000000047' },
+    ]
+  },
+  {
+    id: 'A-04', category: '農業系工事', season: '秋',
+    title: '圃場整備中に古い農業水路が露出',
+    role: '現場作業者', roleIcon: '👷',
+    roleDesc: '実作業・危険回避・報告義務',
+    situation: `圃場整備の掘削作業中、設計図にない古い農業水路とコンクリート構造物が地中から出てきた。設計図は20年前のもので、この構造物は記載されていない。現場代理人は別の工区で対応中で連絡が取りにくい。重機はすでに掘削を始めている。`,
+    keywords: ['埋設構造物', '施工中断', '報告連絡', '施工計画変更', '安全確認'],
+    laws: [
+      { name: '農業振興地域の整備に関する法律 第15条', url: 'https://laws.e-gov.go.jp/law/344AC0000000058' },
+    ]
+  },
+  {
+    id: 'B-03', category: '道路工事', season: '夏',
+    title: '工事中の交通誘導員が熱中症で倒れた',
+    role: '現場管理者', roleIcon: '🦺',
+    roleDesc: '施工管理・安全管理・工程管理の責任者',
+    situation: `道路工事の交通誘導員（70歳・シルバー人材）が正午ごろ、炎天下で突然倒れた。意識はあるが顔が真っ赤で汗が出ていない。救急車を呼ぶと工事が中断し、周辺道路が混雑する可能性がある。発注者の工事監督員が視察に来るのは1時間後だ。`,
+    keywords: ['熱中症', '救命対応', '高齢者労働', '交通誘導', '安全配慮義務'],
+    laws: [
+      { name: '労働安全衛生法 第25条（緊急の危険）', url: 'https://laws.e-gov.go.jp/law/347AC0000000057' },
+    ]
+  },
+];
+
+// ============================================================
+//  状態管理
+// ============================================================
+const state = {
+  user: { name: '', role: '', email: '' },
+  questions: [],
+  current: 0,
+  answers: [],          // { qId, answer, hints:[], followupCount }
+  followupCount: 0,     // 現在の問題の深掘り回数
+};
+
+// ============================================================
+//  ユーティリティ
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg, dur = 2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============================================================
+//  スタート
+// ============================================================
+function startTraining() {
+  const name  = document.getElementById('input-name').value.trim();
+  const role  = document.getElementById('input-role').value;
+  const email = document.getElementById('input-email').value.trim();
+
+  if (!name)  { showToast('氏名を入力してください'); return; }
+  if (!role)  { showToast('役職・立場を選択してください'); return; }
+  if (!email) { showToast('メールアドレスを入力してください'); return; }
+
+  state.user = { name, role, email };
+  state.questions = shuffle(SCENARIOS).slice(0, CONFIG.TOTAL_QUESTIONS);
+  state.answers = state.questions.map(q => ({
+    qId: q.id, answer: '', hints: [], followupCount: 0
+  }));
+  state.current = 0;
+
+  renderQuestion();
+  showScreen('screen-question');
+}
+
+// ============================================================
+//  問題表示
+// ============================================================
+function renderQuestion() {
+  const q = state.questions[state.current];
+  const n = state.current + 1;
+  const total = CONFIG.TOTAL_QUESTIONS;
+
+  document.getElementById('q-counter').textContent    = `第 ${n} 問 / ${total}`;
+  document.getElementById('q-category').textContent   = q.category;
+  document.getElementById('q-title').textContent      = q.title;
+  document.getElementById('progress-fill').style.width = `${(n / total) * 100}%`;
+
+  document.getElementById('role-badge').innerHTML =
+    `${q.roleIcon} <strong>${q.role}</strong>（${q.roleDesc}）`;
+  document.getElementById('situation-text').textContent = q.situation;
+
+  // キーワードタグ
+  const kr = document.getElementById('keywords-row');
+  kr.innerHTML = q.keywords.map(kw =>
+    `<a class="keyword-tag" href="${CONFIG.GLOSSARY_URL}?q=${encodeURIComponent(kw)}" target="_blank">${kw}</a>`
+  ).join('');
+
+  // 法令リンク
+  const ll = document.getElementById('law-links');
+  if (q.laws && q.laws.length) {
+    ll.innerHTML = `<div class="law-links-title">📎 関連法令</div>` +
+      q.laws.map(l => `<a class="law-link" href="${l.url}" target="_blank">▸ ${l.name}</a>`).join('');
+  } else {
+    ll.innerHTML = '';
+  }
+
+  // 入力・ヒントをリセット
+  document.getElementById('answer-input').value = '';
+  document.getElementById('answer-char').textContent = '0字';
+  document.getElementById('hint-card').classList.remove('show');
+  document.getElementById('followup-panel').classList.remove('show');
+  document.getElementById('followup-done-msg').classList.remove('show');
+  document.getElementById('followup-done-msg').textContent = '';
+  document.getElementById('hint-text').textContent = '';
+  document.getElementById('thinking').classList.remove('show');
+  document.getElementById('btn-hint').disabled = false;
+  document.getElementById('btn-hint').textContent = 'ヒントをもらう →';
+
+  const toggleBtn = document.getElementById('btn-followup-toggle');
+  toggleBtn.textContent = 'さらに考えてみる';
+  toggleBtn.disabled = false;
+
+  state.followupCount = 0;
+
+  // 最終問題なら「次へ」ボタンを変える
+  const btnNext = document.getElementById('btn-next');
+  if (state.current >= CONFIG.TOTAL_QUESTIONS - 1) {
+    btnNext.textContent = '評価を見る →';
+    btnNext.style.background = 'var(--c-accent)';
+  } else {
+    btnNext.textContent = '次の問題へ →';
+    btnNext.style.background = 'var(--c-ok)';
+  }
+}
+
+// ============================================================
+//  文字数カウント
+// ============================================================
+function updateCharCount(el) {
+  document.getElementById('answer-char').textContent = `${el.value.length}字`;
+}
+
+function updateFollowupCount(el) {
+  document.getElementById('followup-char').textContent = `${el.value.length}字`;
+}
+
+// ============================================================
+//  ヒント取得
+// ============================================================
+async function getHint() {
+  const answer = document.getElementById('answer-input').value.trim();
+  if (answer.length < 10) {
+    showToast('もう少し詳しく書いてみてください（10字以上）');
+    return;
+  }
+
+  const q = state.questions[state.current];
+  const btn = document.getElementById('btn-hint');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+
+  document.getElementById('hint-card').classList.remove('show');
+  document.getElementById('thinking').classList.add('show');
+
+  // 回答を保存
+  state.answers[state.current].answer = answer;
+
+  const payload = {
+    type: 'hint',
+    user: state.user,
+    question: {
+      id: q.id, title: q.title, situation: q.situation,
+      role: q.role, keywords: q.keywords,
+    },
+    answer,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    let hint;
+
+    if (CONFIG.WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      // デモモード
+      await new Promise(r => setTimeout(r, 1000));
+      hint = `${state.user.name}さんの回答を読みました。\n\n「${answer.slice(0, 30)}…」という判断には重要な視点が含まれています。\n\nここで少し立場を変えて考えてみましょう。もしあなたが${answer.includes('安全') ? '発注者' : '現場作業員'}の立場だったとしたら、この判断をどのように受け止めるでしょうか？また、花本グループ誠心の「${q.keywords[0]}」という観点から、この状況で本来何が求められているのでしょうか？`;
+    } else {
+      const url = CONFIG.WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      hint = data.hint;
+    }
+
+    state.answers[state.current].hints.push(hint);
+
+    document.getElementById('thinking').classList.remove('show');
+    document.getElementById('hint-text').textContent = hint;
+    document.getElementById('hint-card').classList.add('show');
+    document.getElementById('hint-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    document.getElementById('thinking').classList.remove('show');
+    document.getElementById('btn-hint').disabled = false;
+    document.getElementById('btn-hint').textContent = 'ヒントをもらう →';
+    showToast('通信エラーが発生しました。もう一度お試しください。');
+  }
+}
+
+// ============================================================
+//  深掘りトグル
+// ============================================================
+function toggleFollowup() {
+  const panel = document.getElementById('followup-panel');
+  const btn   = document.getElementById('btn-followup-toggle');
+  const isOpen = panel.classList.contains('show');
+
+  if (isOpen) {
+    panel.classList.remove('show');
+    btn.textContent = 'さらに考えてみる';
+  } else {
+    panel.classList.add('show');
+    btn.textContent = '入力欄を閉じる';
+    document.getElementById('followup-input').focus();
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+  }
+}
+
+// ============================================================
+//  深掘り送信（最大2回）
+// ============================================================
+async function sendFollowup() {
+  const input = document.getElementById('followup-input');
+  const newAnswer = input.value.trim();
+  if (newAnswer.length < 10) {
+    showToast('もう少し詳しく書いてみてください（10字以上）');
+    return;
+  }
+
+  const q = state.questions[state.current];
+  const currentHint = document.getElementById('hint-text').textContent;
+  const sendBtn = document.getElementById('btn-followup-send');
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = '送信中…';
+
+  document.getElementById('followup-panel').classList.remove('show');
+  document.getElementById('hint-card').classList.remove('show');
+  document.getElementById('thinking').classList.add('show');
+
+  const payload = {
+    type: 'followup',
+    user: state.user,
+    followupRound: state.followupCount + 1,
+    question: {
+      id: q.id, title: q.title, situation: q.situation,
+      role: q.role, keywords: q.keywords,
+    },
+    previousHint: currentHint,
+    followupAnswer: newAnswer,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    let hint;
+
+    if (CONFIG.WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      await new Promise(r => setTimeout(r, 900));
+      hint = `さらに考えてくれましたね。\n\n「${newAnswer.slice(0, 25)}…」という視点から進んでいます。\n\nその先にある問いがあります——この判断が10年後のあなたから見てどう映るでしょうか？また、同じ状況を経験したベテランと新人では、どんな違いが生まれると思いますか？`;
+    } else {
+      const url = CONFIG.WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(payload));
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      hint = data.hint;
+    }
+
+    state.followupCount++;
+    state.answers[state.current].hints.push(hint);
+    state.answers[state.current].followupCount = state.followupCount;
+
+    document.getElementById('thinking').classList.remove('show');
+    document.getElementById('hint-text').textContent = hint;
+    document.getElementById('hint-card').classList.add('show');
+
+    input.value = '';
+    document.getElementById('followup-char').textContent = '0字';
+    sendBtn.disabled = false;
+    sendBtn.textContent = '深掘りする →';
+
+    const toggleBtn = document.getElementById('btn-followup-toggle');
+
+    // 2回終了したら深掘りボタンを非表示にして終了メッセージ
+    if (state.followupCount >= CONFIG.MAX_FOLLOWUPS) {
+      toggleBtn.disabled = true;
+      toggleBtn.style.display = 'none';
+
+      const doneMsg = document.getElementById('followup-done-msg');
+      doneMsg.textContent = `今回はここまでにしましょう。次の問題に進んで、引き続き考えを深めていきましょう。`;
+      doneMsg.classList.add('show');
+    }
+
+    document.getElementById('hint-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (e) {
+    document.getElementById('thinking').classList.remove('show');
+    document.getElementById('hint-card').classList.add('show');
+    sendBtn.disabled = false;
+    sendBtn.textContent = '深掘りする →';
+    showToast('通信エラーが発生しました。もう一度お試しください。');
+  }
+}
+
+// ============================================================
+//  次の問題へ
+// ============================================================
+function nextQuestion() {
+  if (state.current >= CONFIG.TOTAL_QUESTIONS - 1) {
+    // 全問終了 → 評価画面へ
+    showScreen('screen-evaluating');
+    generateEvaluation();
+  } else {
+    state.current++;
+    renderQuestion();
+    window.scrollTo(0, 0);
+  }
+}
+
+// ============================================================
+//  評価コメント生成（5問終了後）
+// ============================================================
+async function generateEvaluation() {
+
+  // ── スコア計算 ──────────────────────────────────────────
+  const scores = computeScores(state.answers);
+  renderScoreCard(scores);
+
+  // ── 評価コメント ────────────────────────────────────────
+  const summaryPayload = {
+    type: 'evaluation',
+    user: state.user,
+    answers: state.answers.map((a, i) => ({
+      qId: a.qId,
+      qTitle: state.questions[i].title,
+      answer: a.answer,
+      hintsCount: a.hints.length,
+      followupCount: a.followupCount,
+    })),
+    scores,
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    let comment;
+
+    if (CONFIG.WORKER_URL.includes('YOUR-SUBDOMAIN')) {
+      await new Promise(r => setTimeout(r, 1500));
+      comment = generateDemoComment(state.user.name, scores);
+    } else {
+      const url = CONFIG.WORKER_URL + '?payload=' + encodeURIComponent(JSON.stringify(summaryPayload));
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      comment = data.comment;
+    }
+
+    document.getElementById('eval-comment-text').textContent = comment;
+    showScreen('screen-complete');
+
+  } catch (e) {
+    document.getElementById('eval-comment-text').textContent =
+      '評価コメントの取得中にエラーが発生しました。再度お試しください。';
+    showScreen('screen-complete');
+  }
+}
+
+// ============================================================
+//  スコア計算ロジック
+//  概念記載（各10点）＋ 具体策記載（各15点）＝ 最大25点/問
+//  誠心観点：信頼・創造・挑戦・感謝・奉仕・その他提案
+//  最大60点（概念のみ）/ 最大90点（概念＋具体）
+// ============================================================
+function computeScores(answers) {
+  // キーワードベースの簡易評価（本番はworkerのAI評価に移行）
+  const shinshiItems = [
+    { key: '信頼',   icon: '🛡️', conceptKw: ['報告', '連絡', '相談', '情報', '共有', '伝える', '確認'],
+                                 concreteKw: ['すぐに', '〇時までに', '上司に', '書面', '記録', '連絡する'] },
+    { key: '創造',   icon: '💡', conceptKw: ['原因', '分析', '不足', '改善', '見直し', 'なぜ'],
+                                 concreteKw: ['対策', '変更', '計画を', '修正', '提案', '実施'] },
+    { key: '挑戦',   icon: '🌱', conceptKw: ['再発防止', '他の事例', '次回', '学び', '経験'],
+                                 concreteKw: ['ルール化', 'マニュアル', '教育', '訓練', '周知'] },
+    { key: '感謝',   icon: '🙏', conceptKw: ['仲間', '組織', '個人だけ', 'チーム', '協力', '配慮'],
+                                 concreteKw: ['一緒に', 'みんなで', '責任を分担', '話し合い', '支援'] },
+    { key: '奉仕',   icon: '🤝', conceptKw: ['社会', '環境', '記録', '地域', '集積', '蓄積'],
+                                 concreteKw: ['データ', '報告書', 'アーカイブ', '文書化', '発信'] },
+    { key: 'その他提案', icon: '✨', conceptKw: ['独創', '新しい', 'アイデア', '提案', '視点', '工夫'],
+                                 concreteKw: ['具体的に', '例えば', '実際に', '試みる', '方法'] },
+  ];
+
+  let totalConcept = 0;
+  let totalConcrete = 0;
+  const breakdown = [];
+
+  shinshiItems.forEach(item => {
+    // 全回答を結合してチェック
+    const allText = answers.map(a => a.answer).join(' ');
+
+    const hasConcept  = item.conceptKw.some(kw => allText.includes(kw));
+    const hasConcrete = item.concreteKw.some(kw => allText.includes(kw));
+
+    const conceptPts  = hasConcept  ? 10 : 0;
+    const concretePts = hasConcrete ? 15 : 0;
+
+    totalConcept  += conceptPts;
+    totalConcrete += concretePts;
+
+    breakdown.push({
+      key: item.key,
+      icon: item.icon,
+      concept: conceptPts,
+      concrete: concretePts,
+      total: conceptPts + concretePts,
+    });
+  });
+
+  return {
+    breakdown,
+    totalConcept,
+    totalConcrete,
+    total: totalConcept + totalConcrete,
+    maxConcept: 60,
+    maxTotal: 90,
+  };
+}
+
+// ============================================================
+//  スコアカード描画
+// ============================================================
+function renderScoreCard(scores) {
+  const container = document.getElementById('score-breakdown');
+  container.innerHTML = scores.breakdown.map(b => `
+    <div class="score-row">
+      <div class="score-label">${b.icon} ${b.key}</div>
+      <div class="score-val">${b.total}点</div>
+    </div>
+  `).join('');
+
+  document.getElementById('total-score-val').textContent = `${scores.total} / ${scores.maxTotal}点`;
+}
+
+// ============================================================
+//  デモ用評価コメント
+// ============================================================
+function generateDemoComment(name, scores) {
+  const pct = scores.total / scores.maxTotal;
+  let level;
+  if (pct >= 0.8)       level = '非常に高い';
+  else if (pct >= 0.6)  level = '高い';
+  else if (pct >= 0.4)  level = '標準的な';
+  else                  level = '基礎的な';
+
+  const low = scores.breakdown.filter(b => b.total === 0).map(b => b.key);
+  const lowMsg = low.length
+    ? `\n\n特に「${low.join('・')}」の視点については、今後の回答でさらに意識してみてください。`
+    : '\n\n全ての観点で記述が見られました。';
+
+  return `${name}さん、5問お疲れ様でした。\n\n今回の回答全体を通じて、${level}誠心への意識が見られました。${lowMsg}\n\n「報告・連絡・相談」を基本に、原因分析と再発防止の視点、そして組織・仲間への配慮を常に持ち続けることが、花本グループ誠心の実践につながります。\n\n次のトレーニングでも、ぜひ新たな視点に挑戦してください。`;
+}
+</script>
+</body>
+</html>
