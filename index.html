@@ -803,10 +803,6 @@ body {
       </div>
       <!-- 深掘り回数終了メッセージ -->
       <div class="followup-done-msg" id="followup-done-msg"></div>
-      <!-- 用語集リンク -->
-      <div class="glossary-link-row">
-        <a href="https://yamakoziki.github.io/HanamotoGlossary/" target="_blank">📖 花本建設用語集を開く</a>
-      </div>
     </div>
 
     <!-- 深掘り入力パネル -->
@@ -824,6 +820,9 @@ body {
 
     <!-- 法令リンク -->
     <div class="law-links" id="law-links"></div>
+
+    <!-- 用語集リンク -->
+    <div class="law-links" id="glossary-links"></div>
   </div>
 </div>
 
@@ -1125,6 +1124,17 @@ function renderQuestion() {
       q.laws.map(l => `<a class="law-link" href="${l.url}" target="_blank">▸ ${l.name}</a>`).join('');
   } else {
     ll.innerHTML = '';
+  }
+
+  // 用語集リンク
+  const gl = document.getElementById('glossary-links');
+  if (q.keywords && q.keywords.length) {
+    gl.innerHTML = `<div class="law-links-title">📖 花本建設用語集</div>` +
+      q.keywords.map(kw =>
+        `<a class="law-link" href="${CONFIG.GLOSSARY_URL}?q=${encodeURIComponent(kw)}" target="_blank">▸ ${kw}</a>`
+      ).join('');
+  } else {
+    gl.innerHTML = '';
   }
 
   // 入力・ヒントをリセット
