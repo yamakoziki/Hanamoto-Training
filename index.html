@@ -444,6 +444,17 @@ body {
   color: var(--c-text);
   white-space: pre-wrap;
 }
+.glossary-link-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--c-border);
+}
+.glossary-link-row a {
+  font-size: 12px;
+  color: var(--c-brand2);
+  text-decoration: none;
+}
+.glossary-link-row a:hover { text-decoration: underline; }
 .hint-actions {
   display: flex;
   gap: 8px;
@@ -792,6 +803,10 @@ body {
       </div>
       <!-- 深掘り回数終了メッセージ -->
       <div class="followup-done-msg" id="followup-done-msg"></div>
+      <!-- 用語集リンク -->
+      <div class="glossary-link-row">
+        <a href="https://yamakoziki.github.io/HanamotoGlossary/" target="_blank">📖 花本建設用語集を開く</a>
+      </div>
     </div>
 
     <!-- 深掘り入力パネル -->
